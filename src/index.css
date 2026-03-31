@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ダークモード（デフォルト） */
+  :root {
+    --color-bg-rgb: 15 15 15;
+    --color-card-rgb: 26 26 26;
+    --color-border-rgb: 42 42 42;
+    --color-hover-rgb: 37 37 37;
+    --color-text-rgb: 243 244 246;
+    --color-text-sub-rgb: 156 163 175;
+    --scrollbar-track: #1a1a1a;
+    --scrollbar-thumb: #404040;
+    --scrollbar-thumb-hover: #505050;
+  }
+
+  /* ライトモード */
+  :root.light {
+    --color-bg-rgb: 240 237 232;
+    --color-card-rgb: 250 248 245;
+    --color-border-rgb: 221 216 208;
+    --color-hover-rgb: 232 228 222;
+    --color-text-rgb: 44 44 44;
+    --color-text-sub-rgb: 107 101 96;
+    --scrollbar-track: #ebe7e1;
+    --scrollbar-thumb: #c5bfb7;
+    --scrollbar-thumb-hover: #a8a29a;
+  }
+
+  /* ライトモード: Tailwind の gray 系テキスト色を上書き */
+  :root.light {
+    --tw-text-opacity: 1;
+  }
+  .light .text-gray-100 { color: rgb(44 44 44); }
+  .light .text-gray-200 { color: rgb(55 52 48); }
+  .light .text-gray-300 { color: rgb(75 71 66); }
+  .light .text-gray-400 { color: rgb(107 101 96); }
+  .light .text-gray-500 { color: rgb(130 124 118); }
+  .light .text-gray-600 { color: rgb(107 101 96); }
+
+  /* ライトモード: hover 時のテキスト色 */
+  .light .hover\:text-gray-200:hover { color: rgb(44 44 44); }
+  .light .hover\:text-gray-300:hover { color: rgb(55 52 48); }
+
+  /* ライトモード: border 色 */
+  .light .border-dark-border { border-color: rgb(var(--color-border-rgb)); }
+
+  /* ライトモード: placeholder */
+  .light .placeholder\:text-gray-500::placeholder { color: rgb(140 140 140); }
+
+  /* ライトモード: bg-dark-hover/50 等の半透明背景 */
+  .light .bg-dark-hover\/50 { background-color: rgb(var(--color-hover-rgb) / 0.5); }
+
+  /* ライトモード: select, input の背景 */
+  .light select,
+  .light input[type="text"] {
+    color: rgb(44 44 44);
+  }
+
+  html {
+    @apply bg-dark-bg;
+    color: rgb(var(--color-text-rgb));
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  /* スクロールバー */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 3px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
+  }
+
+  /* サイドバー幅に合わせたパディング */
+  .pl-sidebar {
+    padding-left: 1rem;
+  }
+  @media (min-width: 768px) {
+    .pl-sidebar {
+      padding-left: calc(12rem + 1rem);
+    }
+  }
+
+  /* 音量スライダー */
+  input[type='range'] {
+    @apply bg-dark-border;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    @apply bg-accent rounded-full cursor-pointer;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    @apply bg-accent rounded-full cursor-pointer w-3 h-3 border-0;
+  }
+}
