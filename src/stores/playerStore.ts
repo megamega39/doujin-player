@@ -102,7 +102,6 @@ export const usePlayerStore = create<PlayerState>()(
         isPlaying: s.isPlaying,
         trackList: s.trackList,
         volume: s.volume,
-        playbackRate: s.playbackRate,
         trackLoopEnabled: s.trackLoopEnabled,
         playlistLoopEnabled: s.playlistLoopEnabled,
         loopSegment: s.loopSegment,

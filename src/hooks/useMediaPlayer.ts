@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { usePlayerStore } from '../stores/playerStore';
 import { usePlaybackSettingsStore } from '../stores/playbackSettingsStore';
 import { useEffectiveTrackIndex } from './useEffectiveTrackIndex';
@@ -11,6 +12,7 @@ export function useMediaPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlayingRef = useRef(false);
+  const playbackRateRef = useRef(1);
   const wrapToFirstRef = useRef(false);
   const startupHandledRef = useRef(false);
   const [displayTime, setDisplayTime] = useState(0);
@@ -72,6 +74,7 @@ export function useMediaPlayer() {
 
   // 動画トラックに切り替えた時に動画ビューを展開（フラグのみ返す）
   isPlayingRef.current = isPlaying;
+  playbackRateRef.current = playbackRate;
 
   // 起動時: 自動再生設定に応じて isPlaying を制御
   useEffect(() => {
@@ -136,6 +139,7 @@ export function useMediaPlayer() {
     const onCanPlay = () => {
       setDisplayTime(media.currentTime);
       setCurrentTime(media.currentTime);
+      media.playbackRate = playbackRateRef.current;
       if (isPlayingRef.current) media.play();
     };
     media.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -351,6 +355,38 @@ export function useMediaPlayer() {
       ms.setActionHandler('seekforward', null);
     };
   }, [currentTrack?.id, effectiveIndex, trackList, setPlaying, setPlayableItem]);
+
+  // タスクバー サムネイルツールバーのボタン操作を受信
+  useEffect(() => {
+    const unlisten = listen<string>('thumbbar-command', (event) => {
+      const cmd = event.payload;
+      if (cmd === 'play-pause') {
+        if (isPlayingRef.current) {
+          setPlaying(false);
+        } else if (currentTrack) {
+          setPlaying(true);
+        }
+      } else if (cmd === 'prev') {
+        if (!trackList.length || !currentTrack) return;
+        const idx = effectiveIndex;
+        const prevIdx = idx > 0 ? idx - 1 : trackList.length - 1;
+        const prevItem = trackList[prevIdx];
+        if (prevItem) { setPlayableItem(prevItem, prevIdx); setPlaying(true); }
+      } else if (cmd === 'next') {
+        if (!trackList.length || !currentTrack) return;
+        const idx = effectiveIndex;
+        const nextIdx = idx < trackList.length - 1 ? idx + 1 : 0;
+        const nextItem = trackList[nextIdx];
+        if (nextItem) { setPlayableItem(nextItem, nextIdx); setPlaying(true); }
+      }
+    });
+    return () => { unlisten.then((f) => f()); };
+  }, [currentTrack?.id, effectiveIndex, trackList, setPlaying, setPlayableItem]);
+
+  // タスクバー サムネイルツールバーの再生/一時停止アイコンを同期
+  useEffect(() => {
+    invoke('update_thumbbar_playing_state', { isPlaying }).catch(() => {});
+  }, [isPlaying]);
 
   return {
     audioRef,

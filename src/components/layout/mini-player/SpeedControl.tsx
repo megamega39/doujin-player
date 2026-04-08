@@ -1,59 +1,64 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useCallback, useRef } from 'react';
 
-const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5] as const;
+const MIN_RATE = 0.5;
+const MAX_RATE = 3.0;
+const STEP = 0.1;
 
 interface SpeedControlProps {
   playbackRate: number;
   onRateChange: (rate: number) => void;
 }
 
-export function SpeedControl({ playbackRate, onRateChange }: SpeedControlProps) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+function clampRate(value: number): number {
+  return Math.round(Math.min(MAX_RATE, Math.max(MIN_RATE, value)) * 10) / 10;
+}
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [open]);
+export function SpeedControl({ playbackRate, onRateChange }: SpeedControlProps) {
+  const sliderRef = useRef<HTMLInputElement>(null);
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? STEP : -STEP;
+      onRateChange(clampRate(playbackRate + delta));
+    },
+    [playbackRate, onRateChange],
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onRateChange(clampRate(parseFloat(e.target.value)));
+    },
+    [onRateChange],
+  );
+
+  const handleReset = useCallback(() => {
+    onRateChange(1);
+  }, [onRateChange]);
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-dark-hover/50 hover:bg-dark-hover text-xs font-medium text-gray-300 tabular-nums transition-colors"
-        title="再生速度"
+    <div
+      className="flex items-center gap-2"
+      onWheel={handleWheel}
+      title="再生速度（ホイールで調整・ダブルクリックでリセット）"
+    >
+      <span
+        className="text-xs font-medium text-gray-300 tabular-nums cursor-pointer select-none min-w-[3.2em] text-center"
+        onClick={handleReset}
       >
-        {playbackRate}x
-        <ChevronDown size={14} className={open ? 'rotate-180' : ''} />
-      </button>
-      {open && (
-        <div className="absolute right-0 bottom-full mb-1 py-1 bg-dark-card border border-dark-border rounded-lg shadow-xl z-20">
-          {SPEED_OPTIONS.map((r) => (
-            <button
-              key={r}
-              onClick={() => {
-                onRateChange(r);
-                setOpen(false);
-              }}
-              className={`w-full px-4 py-1.5 text-left text-xs tabular-nums transition-colors ${
-                playbackRate === r
-                  ? 'bg-accent/20 text-accent'
-                  : 'text-gray-400 hover:bg-dark-hover hover:text-gray-200'
-              }`}
-            >
-              {r}x
-            </button>
-          ))}
-        </div>
-      )}
+        {playbackRate.toFixed(1)}x
+      </span>
+      <input
+        ref={sliderRef}
+        type="range"
+        min={MIN_RATE}
+        max={MAX_RATE}
+        step={STEP}
+        value={playbackRate}
+        onChange={handleChange}
+        className="w-24 h-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity"
+        title="再生速度"
+      />
     </div>
   );
 }

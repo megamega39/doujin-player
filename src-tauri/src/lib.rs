@@ -3,6 +3,8 @@ mod db;
 mod scanner;
 mod settings;
 mod thumbnail_cache;
+#[cfg(windows)]
+mod thumbbar;
 
 use tauri::Manager;
 use tauri::menu::MenuBuilder;
@@ -57,6 +59,12 @@ fn setup_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> 
     Ok(())
 }
 
+#[cfg(windows)]
+#[tauri::command]
+fn update_thumbbar_playing_state(is_playing: bool) {
+    thumbbar::update_playing_state(is_playing);
+}
+
 fn save_window_state_from_window(window: &tauri::Window) {
     let Ok(maximized) = window.is_maximized() else { return };
     // 最大化中は位置・サイズを保存しない（復元時に最大化フラグで対応）
@@ -102,6 +110,12 @@ pub fn run() {
                 }
             } else {
                 eprintln!("[icon] main window not found");
+            }
+
+            // サムネイルツールバー（タスクバーのメディアコントロール）
+            #[cfg(windows)]
+            if let Some(w) = app.get_webview_window("main") {
+                thumbbar::setup_thumbbar(&w, app.handle().clone());
             }
 
             // ウィンドウサイズ・位置を復元（保存サイズが十分大きい場合のみ）
@@ -197,6 +211,7 @@ pub fn run() {
             set_window_title,
             get_close_to_tray,
             set_close_to_tray,
+            update_thumbbar_playing_state,
         ])
         .on_window_event(|window, event| {
             match event {
