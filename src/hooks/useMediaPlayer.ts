@@ -246,7 +246,7 @@ export function useMediaPlayer() {
         setDuration(d);
       }
     };
-    const intervalId = setInterval(pollTime, 100);
+    const intervalId = setInterval(pollTime, 250);
 
     return () => {
       clearInterval(intervalId);
@@ -281,7 +281,7 @@ export function useMediaPlayer() {
     const media = getMedia();
     if (!media || !loopSegment || !loopEnabled) return;
     const t = media.currentTime;
-    if (t >= loopSegment.start && t < loopSegment.end) return;
+    if (t < loopSegment.end) return;
     media.currentTime = loopSegment.start;
   }, [displayTime, loopEnabled, loopSegment, isVideo]);
 
@@ -357,8 +357,16 @@ export function useMediaPlayer() {
   }, [currentTrack?.id, effectiveIndex, trackList, setPlaying, setPlayableItem]);
 
   // タスクバー サムネイルツールバーのボタン操作を受信
+  const thumbbarUnlistenRef = useRef<(() => void) | null>(null);
   useEffect(() => {
-    const unlisten = listen<string>('thumbbar-command', (event) => {
+    // 前回のリスナーを同期的に解除
+    if (thumbbarUnlistenRef.current) {
+      thumbbarUnlistenRef.current();
+      thumbbarUnlistenRef.current = null;
+    }
+    let cancelled = false;
+    listen<string>('thumbbar-command', (event) => {
+      if (cancelled) return;
       const cmd = event.payload;
       if (cmd === 'play-pause') {
         if (isPlayingRef.current) {
@@ -379,8 +387,16 @@ export function useMediaPlayer() {
         const nextItem = trackList[nextIdx];
         if (nextItem) { setPlayableItem(nextItem, nextIdx); setPlaying(true); }
       }
+    }).then((fn) => {
+      if (cancelled) { fn(); } else { thumbbarUnlistenRef.current = fn; }
     });
-    return () => { unlisten.then((f) => f()); };
+    return () => {
+      cancelled = true;
+      if (thumbbarUnlistenRef.current) {
+        thumbbarUnlistenRef.current();
+        thumbbarUnlistenRef.current = null;
+      }
+    };
   }, [currentTrack?.id, effectiveIndex, trackList, setPlaying, setPlayableItem]);
 
   // タスクバー サムネイルツールバーの再生/一時停止アイコンを同期

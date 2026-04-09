@@ -294,7 +294,8 @@ pub async fn search_works(
         return Ok(Vec::new());
     }
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let pattern = format!("%{}%", query);
+    let escaped = query.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_");
+    let pattern = format!("%{}%", escaped);
     let sql = "SELECT DISTINCT w.id, w.title, w.folder_path, w.thumbnail_path, w.last_played_at, w.is_favorite,
                     COALESCE((SELECT SUM(av.track_count) FROM audio_variants av WHERE av.work_id = w.id), 0) as track_count,
                     w.created_at
@@ -305,11 +306,11 @@ pub async fn search_works(
              LEFT JOIN voice_actors va ON va.id = wva.voice_actor_id
              LEFT JOIN work_circles wc ON wc.work_id = w.id
              LEFT JOIN circles c ON c.id = wc.circle_id
-             WHERE w.title LIKE ?1
-                OR w.folder_path LIKE ?1
-                OR t.name LIKE ?1
-                OR va.name LIKE ?1
-                OR c.name LIKE ?1
+             WHERE w.title LIKE ?1 ESCAPE '\\'
+                OR w.folder_path LIKE ?1 ESCAPE '\\'
+                OR t.name LIKE ?1 ESCAPE '\\'
+                OR va.name LIKE ?1 ESCAPE '\\'
+                OR c.name LIKE ?1 ESCAPE '\\'
              ORDER BY w.title";
     let mut stmt = conn.prepare(sql).map_err(|e| e.to_string())?;
     let rows = stmt

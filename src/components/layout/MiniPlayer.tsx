@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Pause, SkipBack, SkipForward, Repeat, Film, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { useTranslation } from '../../i18n';
 import { useMediaPlayer } from '../../hooks/useMediaPlayer';
 import { useShortcutStore } from '../../stores/shortcutStore';
@@ -80,13 +80,21 @@ export function MiniPlayer() {
       if (cancelled || !d) return;
       setWorkFolderPath(d.work.folder_path);
       setWorkTitle(d.work.title);
-      if (!d.work.thumbnail_path) return;
+      if (!d.work.thumbnail_path) {
+        // サムネなし: タイトルだけでタスクバーサムネイル更新
+        invoke('update_thumbbar_thumbnail', { thumbnailPath: null, title: currentTrack?.title ?? '' }).catch(() => {});
+        return;
+      }
       api.getThumbnailPath(d.work.thumbnail_path).then((filePath) => {
-        if (!cancelled) setWorkThumbSrc(convertFileSrc(filePath));
+        if (!cancelled) {
+          setWorkThumbSrc(convertFileSrc(filePath));
+          // タスクバーサムネイル更新
+          invoke('update_thumbbar_thumbnail', { thumbnailPath: filePath, title: currentTrack?.title ?? '' }).catch(() => {});
+        }
       }).catch(() => {});
     }).catch(() => {});
     return () => { cancelled = true; };
-  }, [currentWorkId]);
+  }, [currentWorkId, currentTrack?.title]);
 
   // 動画トラックに切り替えた時に動画ビューを展開
   useEffect(() => {
@@ -385,13 +393,13 @@ export function MiniPlayer() {
           <span className="hidden md:inline">
             <SpeedControl playbackRate={playbackRate} onRateChange={setPlaybackRate} />
           </span>
-          <span className="hidden md:inline">
+          <span className="hidden lg:inline">
             <SleepTimer
               remaining={sleepTimerRemaining}
               onSet={setSleepTimerRemaining}
             />
           </span>
-          <span className="hidden xl:inline">
+          <span className="hidden lg:inline">
             <VolumeControl
             volume={volume}
             muted={isMuted}

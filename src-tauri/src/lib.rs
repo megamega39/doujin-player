@@ -65,6 +65,14 @@ fn update_thumbbar_playing_state(is_playing: bool) {
     thumbbar::update_playing_state(is_playing);
 }
 
+#[cfg(windows)]
+#[tauri::command]
+async fn update_thumbbar_thumbnail(thumbnail_path: Option<String>, title: String) {
+    tauri::async_runtime::spawn_blocking(move || {
+        thumbbar::update_thumbnail(thumbnail_path.as_deref(), &title);
+    }).await.ok();
+}
+
 fn save_window_state_from_window(window: &tauri::Window) {
     let Ok(maximized) = window.is_maximized() else { return };
     // 最大化中は位置・サイズを保存しない（復元時に最大化フラグで対応）
@@ -212,6 +220,7 @@ pub fn run() {
             get_close_to_tray,
             set_close_to_tray,
             update_thumbbar_playing_state,
+            update_thumbbar_thumbnail,
         ])
         .on_window_event(|window, event| {
             match event {
