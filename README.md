@@ -6,6 +6,8 @@
 
 ローカルの同人音声作品を管理・再生するデスクトップアプリケーションです。
 
+![スクリーンショット](docs/screenshots/screenshot.jpg)
+
 ## インストール
 
 [Releases ページ](https://github.com/megamega39/doujin-player/releases/latest)から最新版のインストーラー（`.exe`）をダウンロードして実行してください。
@@ -59,6 +61,8 @@
 ---
 
 A desktop application for managing and playing local doujin audio works.
+
+![Screenshot](docs/screenshots/screenshot.jpg)
 
 ## Install
 
