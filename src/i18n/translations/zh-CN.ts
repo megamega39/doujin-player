@@ -129,6 +129,7 @@ export default {
     min15: '15分钟',
     min30: '30分钟',
     hour1: '1小时',
+    randomPlay: '随机',
   },
 
   library: {

@@ -28,7 +28,7 @@ export function RecentPage() {
         </button>
       </div>
       {showStats && <MostPlayedSection />}
-      <WorkGridPage titleKey="" filterRecent showSort />
+      <WorkGridPage titleKey="" filterRecent />
     </div>
   );
 }

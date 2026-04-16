@@ -147,6 +147,7 @@ export default {
     min15: '15分',
     min30: '30分',
     hour1: '1時間',
+    randomPlay: 'ランダム',
   },
 
   library: {

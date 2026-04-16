@@ -269,6 +269,7 @@ export function useMediaPlayer() {
       }
     };
     if (isPlaying) {
+      savePosition();
       const intervalId = setInterval(savePosition, 5000);
       return () => clearInterval(intervalId);
     } else {

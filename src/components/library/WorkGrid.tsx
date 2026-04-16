@@ -212,21 +212,23 @@ export function WorkGrid({
       const matchFav = !filterFavorite || w.is_favorite;
       return matchFav;
     });
-    result = [...result].sort((a, b) => {
-      let cmp = 0;
-      if (sortBy === 'title') {
-        cmp = (a.title || '').localeCompare(b.title || '', 'ja');
-      } else if (sortBy === 'created_at') {
-        cmp = (a.created_at ?? 0) - (b.created_at ?? 0);
-      } else if (sortBy === 'last_played_at') {
-        const aVal = a.last_played_at ?? 0;
-        const bVal = b.last_played_at ?? 0;
-        cmp = aVal - bVal;
-      } else if (sortBy === 'track_count') {
-        cmp = (a.track_count ?? 0) - (b.track_count ?? 0);
-      }
-      return sortOrder === 'asc' ? cmp : -cmp;
-    });
+    if (!filterRecent) {
+      result = [...result].sort((a, b) => {
+        let cmp = 0;
+        if (sortBy === 'title') {
+          cmp = (a.title || '').localeCompare(b.title || '', 'ja');
+        } else if (sortBy === 'created_at') {
+          cmp = (a.created_at ?? 0) - (b.created_at ?? 0);
+        } else if (sortBy === 'last_played_at') {
+          const aVal = a.last_played_at ?? 0;
+          const bVal = b.last_played_at ?? 0;
+          cmp = aVal - bVal;
+        } else if (sortBy === 'track_count') {
+          cmp = (a.track_count ?? 0) - (b.track_count ?? 0);
+        }
+        return sortOrder === 'asc' ? cmp : -cmp;
+      });
+    }
     return result;
   }, [works, filterFavorite, sortBy, sortOrder]);
 

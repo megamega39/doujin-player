@@ -129,6 +129,7 @@ export default {
     min15: '15 min',
     min30: '30 min',
     hour1: '1 hora',
+    randomPlay: 'Aleatório',
   },
 
   library: {
