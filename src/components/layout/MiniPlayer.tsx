@@ -390,10 +390,10 @@ export function MiniPlayer() {
           </div>
         </div>
         <div className="hidden sm:flex flex-1 items-center justify-end gap-2 sm:gap-3 min-w-0 flex-shrink-0">
-          <span className="hidden md:inline">
+          <span className="hidden xl:inline">
             <SpeedControl playbackRate={playbackRate} onRateChange={setPlaybackRate} />
           </span>
-          <span className="hidden lg:inline">
+          <span className="hidden xl:inline">
             <SleepTimer
               remaining={sleepTimerRemaining}
               onSet={setSleepTimerRemaining}
