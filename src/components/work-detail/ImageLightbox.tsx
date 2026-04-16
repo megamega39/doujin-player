@@ -82,14 +82,15 @@ export function ImageLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      className="fixed top-0 left-0 right-0 z-[55] flex items-center justify-center bg-black/90"
+      style={{ bottom: 'var(--miniplayer-h, 10rem)' }}
       onClick={(e) => {
         // 背景（自分自身）をクリックした場合のみ閉じる
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative flex items-center justify-center w-full h-full"
+        className="relative flex items-center justify-center w-full h-full overflow-hidden"
         onClick={(e) => {
           // この div 自身（画像やボタンの外側の余白）クリックで閉じる
           if (e.target === e.currentTarget) onClose();
@@ -107,12 +108,12 @@ export function ImageLightbox({
           </button>
         )}
 
-        <div className="flex flex-col items-center gap-4 px-4">
+        <div className="flex flex-col items-center gap-4 px-4 max-h-full overflow-hidden">
           <img
             key={currentPath}
             src={imgSrc}
             alt={fileName || title}
-            className="max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl cursor-pointer"
+            className="max-w-[90vw] w-auto h-auto object-contain rounded-lg shadow-2xl cursor-pointer"
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => {
               e.stopPropagation();
@@ -124,7 +125,7 @@ export function ImageLightbox({
                 setContextMenu({ x: e.clientX, y: e.clientY });
               }
             }}
-            style={{ maxWidth: 'min(90vw, 1200px)', maxHeight: '85vh' }}
+            style={{ maxWidth: 'min(95vw, 1200px)', maxHeight: 'calc(100vh - var(--miniplayer-h, 10rem) - 1.5rem)' }}
           />
           {contextMenu && onThumbnailSet && (
             <div
@@ -143,14 +144,6 @@ export function ImageLightbox({
                 この画像をサムネにする
               </button>
             </div>
-          )}
-          <p className="text-sm text-gray-400 text-center px-4 truncate max-w-xl">
-            {fileName}
-          </p>
-          {images.length > 1 && (
-            <p className="text-xs text-gray-400">
-              {currentIndex + 1} / {images.length}
-            </p>
           )}
         </div>
 

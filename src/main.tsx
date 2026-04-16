@@ -9,6 +9,9 @@ import { usePlayerStore } from './stores/playerStore';
 import { useLanguageStore } from './stores/languageStore';
 import { preloadMessages } from './i18n';
 
+// ブラウザデフォル���の右クリックメニューを無効化
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 // 起動時にテーマを適用
 applyTheme(useThemeStore.getState());
 

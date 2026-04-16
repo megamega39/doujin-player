@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Pause, SkipBack, SkipForward, Repeat, Film, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
@@ -63,6 +63,23 @@ export function MiniPlayer() {
 
   const isMuted = volume === 0;
 
+  // MiniPlayerの高さをCSS変数で公開（ImageLightboxが参照する）
+  const miniPlayerRef = useRef<HTMLDivElement>(null);
+  const updateHeight = useCallback(() => {
+    if (miniPlayerRef.current) {
+      document.documentElement.style.setProperty(
+        '--miniplayer-h',
+        `${miniPlayerRef.current.offsetHeight}px`
+      );
+    }
+  }, []);
+  useEffect(() => {
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    if (miniPlayerRef.current) observer.observe(miniPlayerRef.current);
+    return () => observer.disconnect();
+  }, [updateHeight]);
+
   // 現在再生中の作品サムネイルを取得
   const [workThumbSrc, setWorkThumbSrc] = useState<string | null>(null);
   const [workFolderPath, setWorkFolderPath] = useState<string | null>(null);
@@ -118,7 +135,7 @@ export function MiniPlayer() {
 
   if (!currentTrack) {
     return (
-      <div className="h-20 bg-dark-card border-t border-dark-border flex items-center justify-center text-gray-400">
+      <div ref={miniPlayerRef} className="h-20 bg-dark-card border-t border-dark-border flex items-center justify-center text-gray-400">
         {t('player.selectTrack')}
       </div>
     );
@@ -129,7 +146,7 @@ export function MiniPlayer() {
   const time = seekPreviewTime ?? displayTime ?? currentTime;
 
   return (
-    <div className="bg-dark-card border-t border-dark-border flex flex-col flex-shrink-0 relative z-[60]">
+    <div ref={miniPlayerRef} className="bg-dark-card border-t border-dark-border flex flex-col flex-shrink-0 relative z-[60]">
       <audio
         ref={audioRef}
         preload="auto"
